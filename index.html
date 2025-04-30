@@ -4,20 +4,21 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Average Location App</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
     body {
       font-family: Arial, sans-serif;
-      padding: 2rem;
-      background-color: #f9f9f9;
-      text-align: center;
+      padding: 1rem;
+      margin: 0;
+    }
+    #map {
+      height: 80vh;
+      margin: 1rem 0;
     }
     button {
       padding: 10px 20px;
       font-size: 1rem;
-    }
-    .output {
-      margin-top: 1.5rem;
-      font-size: 1.2rem;
+      margin-bottom: 1rem;
     }
   </style>
 </head>
@@ -25,15 +26,8 @@
   <h1>Average Location App</h1>
   <p>Group ID: <span id="group-id">-</span></p>
   <button id="share-location">Share My Location</button>
-  <div class="output">
-    <p>Average Latitude: <span id="avg-lat">-</span></p>
-    <p>Average Longitude: <span id="avg-lng">-</span></p>
-  </div>
+  <div id="map"></div>
 
-  <!-- Firebase Compat SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
-  <!-- Your JS logic -->
-  <script src="script.js"></script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>
