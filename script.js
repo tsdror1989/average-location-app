@@ -1,62 +1,53 @@
-// Firebase SDKs
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
-
-// Your Firebase config (replace with your actual Firebase project details)
+// Your Firebase config
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyBsjOURX7bM6OlvgklFC9TwD7czCSjP0PY",
+  authDomain: "average-location-app.firebaseapp.com",
+  projectId: "average-location-app",
+  storageBucket: "average-location-app.appspot.com",
+  messagingSenderId: "112355932948",
+  appId: "1:112355932948:web:bd11b6ebbb2f538edf6001"
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-// Get group ID from URL (defaults to "default" if no group ID is passed)
+// Get group ID from URL (or use "default")
 const urlParams = new URLSearchParams(window.location.search);
 const groupId = urlParams.get("group") || "default";
 document.getElementById("group-id").textContent = groupId;
 
-// Share location
+// Share location button
 document.getElementById("share-location").addEventListener("click", () => {
   if (!navigator.geolocation) {
     alert("Geolocation is not supported by your browser.");
     return;
   }
-  
-  // Get current position
-  navigator.geolocation.getCurrentPosition(
-    async (position) => {
-      const { latitude, longitude } = position.coords;
-      try {
-        // Save location to Firestore
-        await addDoc(collection(db, `groups/${groupId}/coordinates`), {
-          lat: latitude,
-          lng: longitude,
-          timestamp: Date.now()
-        });
-        alert("Location shared!");
-      } catch (e) {
-        console.error("Error adding document: ", e);
-      }
-    },
-    (error) => {
-      alert("Error getting location: " + error.message);
+
+  navigator.geolocation.getCurrentPosition(async (position) => {
+    const { latitude, longitude } = position.coords;
+    try {
+      await db.collection("groups").doc(groupId).collection("coordinates").add({
+        lat: latitude,
+        lng: longitude,
+        timestamp: Date.now()
+      });
+      alert("Location shared!");
+    } catch (error) {
+      console.error("Error sharing location:", error);
     }
-  );
+  });
 });
 
-// Listen to Firestore and update average location
-onSnapshot(collection(db, `groups/${groupId}/coordinates`), (snapshot) => {
-  const data = snapshot.docs.map(doc => doc.data());
-  if (data.length === 0) return;
+// Listen to updates and show average
+db.collection("groups").doc(groupId).collection("coordinates")
+  .onSnapshot((snapshot) => {
+    const points = snapshot.docs.map(doc => doc.data());
+    if (points.length === 0) return;
 
-  const avgLat = data.reduce((sum, p) => sum + p.lat, 0) / data.length;
-  const avgLng = data.reduce((sum, p) => sum + p.lng, 0) / data.length;
+    const avgLat = points.reduce((sum, p) => sum + p.lat, 0) / points.length;
+    const avgLng = points.reduce((sum, p) => sum + p.lng, 0) / points.length;
 
-  document.getElementById("avg-lat").textContent = avgLat.toFixed(6);
-  document.getElementById("avg
+    document.getElementById("avg-lat").textContent = avgLat.toFixed(6);
+    document.getElementById("avg-lng").textContent = avgLng.toFixed(6);
+  });
