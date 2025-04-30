@@ -2,7 +2,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
 import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
-// Your Firebase config (replace with your values from Firebase console)
+// Your Firebase config (replace with your actual Firebase project details)
 const firebaseConfig = {
   apiKey: "YOUR_API_KEY",
   authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
@@ -16,7 +16,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Get group ID from URL
+// Get group ID from URL (defaults to "default" if no group ID is passed)
 const urlParams = new URLSearchParams(window.location.search);
 const groupId = urlParams.get("group") || "default";
 document.getElementById("group-id").textContent = groupId;
@@ -27,22 +27,30 @@ document.getElementById("share-location").addEventListener("click", () => {
     alert("Geolocation is not supported by your browser.");
     return;
   }
-  navigator.geolocation.getCurrentPosition(async (position) => {
-    const { latitude, longitude } = position.coords;
-    try {
-      await addDoc(collection(db, `groups/${groupId}/coordinates`), {
-        lat: latitude,
-        lng: longitude,
-        timestamp: Date.now()
-      });
-      alert("Location shared!");
-    } catch (e) {
-      console.error("Error adding document: ", e);
+  
+  // Get current position
+  navigator.geolocation.getCurrentPosition(
+    async (position) => {
+      const { latitude, longitude } = position.coords;
+      try {
+        // Save location to Firestore
+        await addDoc(collection(db, `groups/${groupId}/coordinates`), {
+          lat: latitude,
+          lng: longitude,
+          timestamp: Date.now()
+        });
+        alert("Location shared!");
+      } catch (e) {
+        console.error("Error adding document: ", e);
+      }
+    },
+    (error) => {
+      alert("Error getting location: " + error.message);
     }
-  });
+  );
 });
 
-// Listen and update average location
+// Listen to Firestore and update average location
 onSnapshot(collection(db, `groups/${groupId}/coordinates`), (snapshot) => {
   const data = snapshot.docs.map(doc => doc.data());
   if (data.length === 0) return;
@@ -51,5 +59,4 @@ onSnapshot(collection(db, `groups/${groupId}/coordinates`), (snapshot) => {
   const avgLng = data.reduce((sum, p) => sum + p.lng, 0) / data.length;
 
   document.getElementById("avg-lat").textContent = avgLat.toFixed(6);
-  document.getElementById("avg-lng").textContent = avgLng.toFixed(6);
-});
+  document.getElementById("avg
