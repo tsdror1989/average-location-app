@@ -1,22 +1,36 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>Average Location App</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet/dist/leaflet.css"
-    />
-    <style>
-      #map { height: 400px; }
-      button { margin-top: 10px; }
-    </style>
-  </head>
-  <body>
-    <h2>Click to Submit Your Location</h2>
-    <button onclick="submitLocation()">Submit My Location</button>
-    <div id="map"></div>
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script src="script.js"></script>
-  </body>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Average Location App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+      background-color: #f9f9f9;
+      text-align: center;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 1rem;
+    }
+    .output {
+      margin-top: 1.5rem;
+      font-size: 1.2rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Average Location App</h1>
+  <p>Group ID: <span id="group-id"></span></p>
+  <button id="share-location">Share My Location</button>
+  <div class="output">
+    <p>Average Latitude: <span id="avg-lat">-</span></p>
+    <p>Average Longitude: <span id="avg-lng">-</span></p>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script type="module" src="script.js"></script>
+</body>
 </html>
