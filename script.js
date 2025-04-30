@@ -1,4 +1,4 @@
-// Your Firebase config
+// Firebase config (yours is correct)
 const firebaseConfig = {
   apiKey: "AIzaSyBsjOURX7bM6OlvgklFC9TwD7czCSjP0PY",
   authDomain: "average-location-app.firebaseapp.com",
@@ -8,45 +8,46 @@ const firebaseConfig = {
   appId: "1:112355932948:web:bd11b6ebbb2f538edf6001"
 };
 
-// Initialize Firebase
+// Init Firebase and Firestore
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// Get group ID from URL (or use "default")
-const urlParams = new URLSearchParams(window.location.search);
-const groupId = urlParams.get("group") || "default";
+// Get group ID from URL (e.g., ?group=paris)
+const params = new URLSearchParams(window.location.search);
+const groupId = params.get("group") || "default";
 document.getElementById("group-id").textContent = groupId;
 
-// Share location button
+// Share current location
 document.getElementById("share-location").addEventListener("click", () => {
   if (!navigator.geolocation) {
-    alert("Geolocation is not supported by your browser.");
+    alert("Geolocation not supported.");
     return;
   }
 
-  navigator.geolocation.getCurrentPosition(async (position) => {
-    const { latitude, longitude } = position.coords;
+  navigator.geolocation.getCurrentPosition(async (pos) => {
+    const { latitude, longitude } = pos.coords;
+
     try {
       await db.collection("groups").doc(groupId).collection("coordinates").add({
         lat: latitude,
         lng: longitude,
         timestamp: Date.now()
       });
-      alert("Location shared!");
-    } catch (error) {
-      console.error("Error sharing location:", error);
+      alert("Location shared.");
+    } catch (err) {
+      console.error("Error saving location:", err);
     }
   });
 });
 
-// Listen to updates and show average
+// Listen to Firestore and compute averages
 db.collection("groups").doc(groupId).collection("coordinates")
   .onSnapshot((snapshot) => {
-    const points = snapshot.docs.map(doc => doc.data());
-    if (points.length === 0) return;
+    const docs = snapshot.docs.map(doc => doc.data());
+    if (docs.length === 0) return;
 
-    const avgLat = points.reduce((sum, p) => sum + p.lat, 0) / points.length;
-    const avgLng = points.reduce((sum, p) => sum + p.lng, 0) / points.length;
+    const avgLat = docs.reduce((sum, d) => sum + d.lat, 0) / docs.length;
+    const avgLng = docs.reduce((sum, d) => sum + d.lng, 0) / docs.length;
 
     document.getElementById("avg-lat").textContent = avgLat.toFixed(6);
     document.getElementById("avg-lng").textContent = avgLng.toFixed(6);
